@@ -1,6 +1,7 @@
 import { useEffect, useCallback, useReducer } from 'react';
 import * as SecureStore from 'expo-secure-store';
 import { Platform } from 'react-native';
+import { Session } from '@supabase/supabase-js';
 
 type UseStateHook<T> = [[boolean, T | null], (value: T | null) => void];
 
@@ -34,10 +35,8 @@ export async function setStorageItemAsync(key: string, value: string | null) {
 }
 
 export function useStorageState(key: string): UseStateHook<string> {
-    // Public
     const [state, setState] = useAsyncState<string>();
 
-    // Get
     useEffect(() => {
         if (Platform.OS === 'web') {
             try {
@@ -54,7 +53,6 @@ export function useStorageState(key: string): UseStateHook<string> {
         }
     }, [key]);
 
-    // Set
     const setValue = useCallback(
         (value: string | null) => {
             setState(value);
@@ -65,3 +63,5 @@ export function useStorageState(key: string): UseStateHook<string> {
 
     return [state, setValue];
 }
+
+
