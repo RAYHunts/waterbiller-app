@@ -79,6 +79,13 @@ export default function SignIn() {
         <Button onPress={form.handleSubmit}>
           <ButtonText>Sign In</ButtonText>
         </Button>
+
+        <View className="flex flex-row justify-center">
+          <Text>Don't have an account?</Text>
+          <Button onPress={() => router.push("/sign-up")}>
+            <ButtonText>Sign Up</ButtonText>
+          </Button>
+        </View>
       </Card>
     </View>
   );

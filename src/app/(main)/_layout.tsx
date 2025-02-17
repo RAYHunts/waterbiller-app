@@ -27,9 +27,35 @@ export default function AppLayout() {
 
   // This layout can be deferred because it's not the root layout.
   return (
-    <Tabs screenOptions={{ tabBarActiveTintColor: "blue", headerShown: false }}>
-      <Tabs.Screen name="index" options={{ title: "As" }} />
-      <Tabs.Screen name="about" options={{ title: "About" }} />
+    <Tabs
+      screenOptions={{
+        tabBarActiveTintColor: "blue",
+        headerShown: false,
+        tabBarStyle: { backgroundColor: "red" },
+        tabBarActiveBackgroundColor: "blue",
+      }}
+    >
+      <Tabs.Screen
+        name="index"
+        options={{
+          title: "Home",
+          tabBarIcon: ({ color }) => <Text style={{ color }}>🏠</Text>,
+        }}
+      />
+      <Tabs.Screen
+        name="about"
+        options={{
+          title: "About",
+          tabBarIcon: ({ color }) => <Text style={{ color }}>📖</Text>,
+        }}
+      />
+      <Tabs.Screen
+        name="profile"
+        options={{
+          title: "Profile",
+          tabBarIcon: ({ color }) => <Text style={{ color }}>👤</Text>,
+        }}
+      />
     </Tabs>
   );
 }
