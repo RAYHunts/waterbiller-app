@@ -1,3 +1,4 @@
+// src/context/auth-context.tsx
 import {
   useContext,
   createContext,
@@ -63,9 +64,37 @@ export function SessionProvider({ children }: PropsWithChildren) {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
 
+  const parseSession = (session: string) => {
+    if (!session) return { access_token: "", refresh_token: "" };
+    return JSON.parse(session) as Session;
+  };
+
+  // setSession on reload
+  useEffect(() => {
+    if (isLoading) return;
+
+    const { access_token, refresh_token } = parseSession(session as string);
+    const refreshSession = async () => {
+      const { data, error } = await supabase.auth.setSession({
+        access_token,
+        refresh_token,
+      });
+      if (data.session) {
+        setSession(JSON.stringify(data.session));
+      }
+    };
+
+    if (session) {
+      refreshSession();
+    }
+  }, [isLoading]);
+
   useEffect(() => {
     const fetchUser = async () => {
-      const { data, error } = await supabase.auth.getUser();
+      const {
+        data: { user },
+        error,
+      } = await supabase.auth.getUser();
       if (error) {
         Alert.alert("Error getting user", error.message);
         console.error("Error getting user", error.message);
@@ -74,14 +103,14 @@ export function SessionProvider({ children }: PropsWithChildren) {
         .schema("public")
         .from("profiles")
         .select("*")
-        .eq("id", data.user?.id)
+        .eq("id", user?.id)
         .single();
       if (profileError) {
         Alert.alert("Error getting profile", profileError.message);
         console.error("Error getting profile", profileError.message);
       }
       setProfile(profile);
-      setUser(data.user);
+      setUser(user);
     };
     if (session) {
       fetchUser();
@@ -98,8 +127,10 @@ export function SessionProvider({ children }: PropsWithChildren) {
     });
 
     if (error) Alert.alert(error.message);
-    setSession(session ? JSON.stringify(session.access_token) : null);
-    // setLoading(false);
+
+    if (session) {
+      setSession(JSON.stringify(session));
+    }
     Alert.alert("Signed in successfully!", user?.email);
     router.push("/"); // Redirect to main route after sign-in
   };
@@ -131,7 +162,7 @@ export function SessionProvider({ children }: PropsWithChildren) {
       refresh_token,
     });
     if (error) throw error;
-    setSession(data.session ? JSON.stringify(data.session.access_token) : null);
+    setSession(data.session ? JSON.stringify(data.session) : null);
   };
 
   const performOAuth = async () => {
@@ -168,12 +199,31 @@ export function SessionProvider({ children }: PropsWithChildren) {
   };
 
   const signOut = async () => {
-    const { error } = await supabase.auth.signOut();
-
-    if (error) throw error;
-    setSession(null);
-    setUser(null);
-    router.push("/sign-in");
+    Alert.alert(
+      "Log out",
+      "Are you sure you want to log out?",
+      [
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+        {
+          text: "Log Out",
+          onPress: async () => {
+            const { error } = await supabase.auth.signOut();
+            if (error) {
+              Alert.alert("Error logging out", error.message);
+              return;
+            }
+            setSession(null);
+            setUser(null);
+            router.push("/sign-in");
+          },
+          style: "destructive",
+        },
+      ],
+      { cancelable: true },
+    );
   };
 
   return (

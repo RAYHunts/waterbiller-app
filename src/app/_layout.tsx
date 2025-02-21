@@ -3,19 +3,20 @@ import { GluestackUIProvider } from "../components/ui/gluestack-ui-provider";
 // Import your global CSS file
 import "@/src/styles/global.css";
 import { SessionProvider } from "../context/auth-context";
-import { useColorScheme } from "react-native";
+import { Appearance, useColorScheme } from "react-native";
 import { StatusBar } from "expo-status-bar";
+import { useState } from "react";
 
 export default function Root() {
-  const colorScheme = useColorScheme();
-  const mode = colorScheme === "dark" ? "dark" : "light";
+  let colorScheme = useColorScheme();
+  const [colorMode, setColorMode] = useState<"light" | "dark">("light");
 
   return (
     <SessionProvider>
-      <GluestackUIProvider mode={mode}>
+      <GluestackUIProvider mode={"system"}>
         <Slot />
       </GluestackUIProvider>
-      <StatusBar style="auto" />
+      <StatusBar style={"dark"} />
     </SessionProvider>
   );
 }

@@ -1,95 +1,92 @@
-import React, { useRef, useState } from "react";
-import { Box } from "@components/ui/box";
-import { HStack } from "@components/ui/hstack";
-import {
-  AlertCircleIcon,
-  ChevronDownIcon,
-  ChevronLeftIcon,
-  ChevronRightIcon,
-  CloseIcon,
-  EditIcon,
-  Icon,
-  MenuIcon,
-  PhoneIcon,
-  SettingsIcon,
-} from "@components/ui/icon";
-import { Text } from "@components/ui/text";
-import { VStack } from "@components/ui/vstack";
-import { Pressable } from "@components/ui/pressable";
-import { AlertCircle, type LucideIcon } from "lucide-react-native";
-import { Button, ButtonIcon, ButtonText } from "@components/ui/button";
-import { Heading } from "@components/ui/heading";
-import { ScrollView } from "@components/ui/scroll-view";
-import {
-  Modal,
-  ModalBackdrop,
-  ModalBody,
-  ModalCloseButton,
-  ModalContent,
-  ModalHeader,
-} from "@components/ui/modal";
-import { Input, InputField } from "@components/ui/input";
-import {
-  Avatar,
-  AvatarBadge,
-  AvatarFallbackText,
-  AvatarImage,
-} from "@components/ui/avatar";
+import React from "react";
 import { SafeAreaView } from "@components/ui/safe-area-view";
-import { Center } from "@components/ui/center";
-import { cn } from "@gluestack-ui/nativewind-utils/cn";
-import { Keyboard, Platform } from "react-native";
-import { Divider } from "@components/ui/divider";
-import {
-  FormControl,
-  FormControlError,
-  FormControlErrorIcon,
-  FormControlErrorText,
-  FormControlLabel,
-  FormControlLabelText,
-} from "@components/ui/form-control";
-import {
-  Select,
-  SelectBackdrop,
-  SelectContent,
-  SelectDragIndicator,
-  SelectDragIndicatorWrapper,
-  SelectIcon,
-  SelectInput,
-  SelectItem,
-  SelectPortal,
-  SelectTrigger,
-} from "@components/ui/select";
-import { isWeb } from "@gluestack-ui/nativewind-utils/IsWeb";
+import { ScrollView } from "@components/ui/scroll-view";
+import { VStack } from "@components/ui/vstack";
+import { HStack } from "@components/ui/hstack";
+import { Avatar, AvatarImage } from "@components/ui/avatar";
+import { Text } from "@components/ui/text";
+import { Heading } from "@components/ui/heading";
+import { Button, ButtonText } from "@components/ui/button";
+import { Card } from "@/src/components/ui/card";
 import { useRouter } from "expo-router";
 import { useSession } from "@/src/context/auth-context";
+import { Alert } from "react-native";
+import { Appearance, useColorScheme } from "react-native";
 
 export default function Profile() {
-  const { user, profile } = useSession();
-  if (Platform.OS === "web") {
-    console.log("profile", profile);
-    console.log("user", user);
-  }
-
+  const { user, profile, signOut } = useSession();
   const router = useRouter();
+
+  const handleLogOut = () => {
+    Alert.alert(
+      "Log out",
+      "Are you sure you want to log out?",
+      [
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+        {
+          text: "Log Out",
+          onPress: async () => {
+            await signOut();
+          },
+          style: "destructive",
+        },
+      ],
+      { cancelable: true },
+    );
+  };
 
   return (
     <SafeAreaView>
       <ScrollView>
-        <VStack>
-          <Heading>Profile</Heading>
+        <Card>
           <VStack>
-            <Avatar size="lg">
-              <AvatarImage
-                source={{
-                  uri: "https://avatars.githubusercontent.com/u/682703?v=4",
-                }}
-              />
-            </Avatar>
-            <Text>{profile?.first_name}</Text>
-            <Text>{user?.user_metadata?.first_name}</Text>
+            <Heading>Profile</Heading>
+            <HStack>
+              <Avatar size="lg">
+                <AvatarImage
+                  source={{
+                    uri: "https://avatars.githubusercontent.com/u/682703?v=4",
+                  }}
+                />
+              </Avatar>
+              <VStack>
+                <Text>{profile?.first_name}</Text>
+                <Text>{user?.email}</Text>
+              </VStack>
+            </HStack>
+
+            <Button onPress={() => router.replace("/profile/edit")}>
+              <ButtonText>Edit</ButtonText>
+            </Button>
           </VStack>
-        </VStack>
+        </Card>
+
+        <Card>
+          <VStack>
+            <Heading>Settings</Heading>
+            <Button onPress={() => router.replace("/profile")}>
+              <ButtonText>Profile</ButtonText>
+            </Button>
+            <Button onPress={() => router.replace("/meter-devices/index")}>
+              <ButtonText>Meter Device</ButtonText>
+            </Button>
+            <Button
+              onPress={() => {
+                const colorScheme = Appearance.getColorScheme();
+                const newScheme = colorScheme === "dark" ? "light" : "dark";
+                Appearance.setColorScheme(newScheme);
+              }}
+            >
+              <ButtonText>Switch Theme</ButtonText>
+            </Button>
+            <Button onPress={handleLogOut}>
+              <ButtonText>Log Out</ButtonText>
+            </Button>
+          </VStack>
+        </Card>
       </ScrollView>
     </SafeAreaView>
   );
