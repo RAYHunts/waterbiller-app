@@ -1,29 +1,21 @@
 import { AppState, Text, View } from "react-native";
 import { Redirect, Slot, Stack } from "expo-router";
 
-import { useSession } from "@/src/context/auth-context";
-import { supabase } from "@/src/utils/supabase";
-import { Spinner } from "@/src/components/ui/spinner";
-
-AppState.addEventListener("change", (state) => {
-  if (state === "active") {
-    supabase.auth.startAutoRefresh();
-  } else {
-    supabase.auth.stopAutoRefresh();
-  }
-});
+import { useAuth } from "@/context/auth-context";
+import { supabase } from "@/utils/supabase";
+import LoadingScreen from "@/components/screen/Loading";
 
 export default function AuthLayout() {
-  const { session, isLoading } = useSession();
+  const { session, isLoading } = useAuth();
 
   // You can keep the splash screen open, or render a loading screen like we do here.
   if (isLoading) {
     return (
-      <View className="flex-1 items-center justify-center">
-        <Spinner />
-      </View>
+      <LoadingScreen/>
     );
   }
+
+  
 
   // Only require authentication within the (app) group's layout as users
   // need to be able to access the (auth) group and sign in again.

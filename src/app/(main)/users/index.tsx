@@ -1,8 +1,4 @@
-import { Avatar, AvatarImage } from "@/src/components/ui/avatar";
-import { Card } from "@/src/components/ui/card";
-import { HStack } from "@/src/components/ui/hstack";
-import { VStack } from "@/src/components/ui/vstack";
-import { supabase } from "@/src/utils/supabase";
+import { supabase } from "@/utils/supabase";
 import { useEffect, useState } from "react";
 import { Text, View } from "react-native";
 
@@ -25,22 +21,13 @@ const ListUsers = () => {
 
   return (
     <View>
-      <Card>
-        <VStack>
-          {users?.map((user) => (
-            <View key={user.id}>
-              <HStack className="flex items-center justify-center gap-4">
-                <Avatar size="lg">
-                  <AvatarImage source={{ uri: user.avatar_url }} />
-                </Avatar>
-                <Text>{user.id}</Text>
-                <Text>{user.first_name}</Text>
-                <Text>{user.last_name}</Text>
-              </HStack>
-            </View>
-          ))}
-        </VStack>
-      </Card>
+      <Text>Users List</Text>
+      {users &&
+        users.map((user) => (
+          <Text key={user.id}>{user.name}</Text>
+        ))}
+
+      {users?.length === 0 && <Text>No users found</Text>}
     </View>
   );
 };

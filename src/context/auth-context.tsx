@@ -35,9 +35,17 @@ type Profile = {
   updated_at: string;
 };
 
+type SignUpPayloadType = {
+  first_name: string;
+  last_name: string;
+  phone_number : string;
+  email: string;
+  password: string;
+}
+
 const AuthContext = createContext<{
   signIn: (email: string, password: string) => void;
-  signUp: (email: string, password: string) => void;
+  signUp: (payload: SignUpPayloadType) => void;
   createSessionFromUrl: (url: string) => void;
   performOAuth: () => void;
   sendMagicLink: (email: string) => void;
@@ -59,7 +67,8 @@ const AuthContext = createContext<{
   isLoading: false,
 });
 
-export function SessionProvider({ children }: PropsWithChildren) {
+export function AuthProvider({ children }: PropsWithChildren) {
+  // const [isLoading, setIsLoading] = useState(true);
   const [[isLoading, session], setSession] = useStorageState("session");
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -81,6 +90,8 @@ export function SessionProvider({ children }: PropsWithChildren) {
       });
       if (data.session) {
         setSession(JSON.stringify(data.session));
+      } else {
+        setSession(null);
       }
     };
 
@@ -135,13 +146,20 @@ export function SessionProvider({ children }: PropsWithChildren) {
     router.push("/"); // Redirect to main route after sign-in
   };
 
-  const signUp = async (email: string, password: string) => {
+  const signUp = async (payload: SignUpPayloadType) => {
     const {
       data: { session },
       error,
     } = await supabase.auth.signUp({
-      email: email,
-      password: password,
+      email: payload.email,
+      password: payload.password,
+      options: {
+        data :{
+          first_name: payload.first_name,
+          last_name: payload.last_name,
+          phone_number: payload.phone_number,
+        }
+      }
     });
 
     if (error) Alert.alert(error.message);
@@ -246,6 +264,6 @@ export function SessionProvider({ children }: PropsWithChildren) {
   );
 }
 
-export function useSession() {
+export function useAuth() {
   return useContext(AuthContext);
 }

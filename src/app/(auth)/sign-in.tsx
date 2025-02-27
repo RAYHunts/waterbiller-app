@@ -1,16 +1,9 @@
-// src/app/(auth)/sign-in.tsx
 import { router } from "expo-router";
-import { AppState, Text, View } from "react-native";
-
-import { useSession } from "@/src/context/auth-context";
-import { Button, ButtonText } from "../../components/ui/button";
-import { Card } from "../../components/ui/card";
-import { Input, InputField, InputIcon, InputSlot } from "@components/ui/input";
-import { useForm } from "@tanstack/react-form";
-import { EyeIcon, EyeOffIcon, LockIcon } from "../../components/ui/icon";
+import { Text, View, TextInput, TouchableOpacity, StyleSheet } from "react-native";
+import { useAuth } from "@/context/auth-context";
+import { useForm, Controller } from "react-hook-form";
 import { useState } from "react";
 import * as Linking from "expo-linking";
-import { supabase } from "@/src/utils/supabase";
 
 type SignInPayload = {
   email: string;
@@ -18,75 +11,130 @@ type SignInPayload = {
 };
 
 export default function SignIn() {
-  const { signIn, createSessionFromUrl, performOAuth, sendMagicLink } =
-    useSession();
+  const { signIn, createSessionFromUrl } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
 
   const url = Linking.useURL();
   if (url) createSessionFromUrl(url);
 
-  const form = useForm<SignInPayload>({
+  const { control, handleSubmit } = useForm<SignInPayload>({
     defaultValues: {
       email: "",
       password: "",
     },
-    onSubmit: async (payload) => {
-      const response = await signIn(
-        payload.value.email,
-        payload.value.password,
-      );
-    },
   });
+
+  const onSubmit = async (data: SignInPayload) => {
+    await signIn(data.email, data.password);
+  };
 
   const handleHide = () => {
     setShowPassword((prev) => !prev);
   };
 
   return (
-    <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-      <Card variant="elevated" className="flex w-80 flex-col gap-3">
-        <form.Field
+    <View style={styles.container}>
+      <View style={styles.card}>
+        <Controller
+          control={control}
           name="email"
-          children={(field) => (
-            <Input className="my-1">
-              <InputField
-                type="text"
-                placeholder="email"
-                value={field.state.value}
-                onChangeText={field.handleChange}
-              />
-            </Input>
+          render={({ field: { onChange, value } }) => (
+            <TextInput
+              style={styles.input}
+              placeholder="Email"
+              value={value}
+              onChangeText={onChange}
+            />
           )}
         />
-        <form.Field
+        <Controller
+          control={control}
           name="password"
-          children={(field) => (
-            <Input className="my-1">
-              <InputField
-                type={showPassword ? "text" : "password"}
-                placeholder="password"
-                value={field.state.value}
-                onChangeText={field.handleChange}
+          render={({ field: { onChange, value } }) => (
+            <View style={styles.passwordInputContainer}>
+              <TextInput
+                style={styles.passwordInput}
+                secureTextEntry={!showPassword}
+                placeholder="Password"
+                value={value}
+                onChangeText={onChange}
               />
-              <InputSlot onPress={handleHide}>
-                <InputIcon>
-                  {showPassword ? <EyeOffIcon /> : <EyeIcon />}
-                </InputIcon>
-              </InputSlot>
-            </Input>
+              <TouchableOpacity style={styles.eyeIcon} onPress={handleHide}>
+                {showPassword ? "👁️" : "😊"}
+              </TouchableOpacity>
+            </View>
           )}
         />
-        <Button onPress={form.handleSubmit}>
-          <ButtonText>Sign In</ButtonText>
-        </Button>
+        <TouchableOpacity style={styles.button} onPress={handleSubmit(onSubmit)}>
+          <Text style={styles.buttonText}>Sign In</Text>
+        </TouchableOpacity>
 
-        <View className="flex flex-row justify-center">
+        <View style={styles.signupContainer}>
           <Text>Don't have an account?</Text>
-          <Button onPress={() => router.push("/sign-up")}>
-            <ButtonText>Sign Up</ButtonText>
-          </Button>
+          <TouchableOpacity onPress={() => router.push("/sign-up")}>
+            <Text style={styles.signupButtonText}>Sign Up</Text>
+          </TouchableOpacity>
         </View>
-      </Card>
+      </View>
     </View>
   );
 }
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  card: {
+    width: '80%',
+    backgroundColor: 'white',
+    padding: 20,
+    borderRadius: 10,
+    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.25)', // Replaced shadow* with boxShadow
+  },
+  input: {
+    height: 40,
+    borderColor: 'gray',
+    borderWidth: 1,
+    borderRadius: 5,
+    paddingHorizontal: 10,
+    marginBottom: 10,
+  },
+  passwordInputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderColor: 'gray',
+    borderWidth: 1,
+    borderRadius: 5,
+    paddingHorizontal: 10,
+    marginBottom: 10,
+  },
+  passwordInput: {
+    flex: 1,
+    height: 40,
+  },
+  eyeIcon: {
+    padding: 10,
+  },
+  button: {
+    backgroundColor: '#007bff',
+    padding: 15,
+    borderRadius: 5,
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  buttonText: {
+    color: 'white',
+    fontWeight: 'bold',
+  },
+  signupContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginTop: 10,
+  },
+  signupButtonText: {
+    color: '#007bff',
+    fontWeight: 'bold',
+    marginLeft: 5,
+  },
+});

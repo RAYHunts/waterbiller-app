@@ -1,7 +1,7 @@
 import 'react-native-url-polyfill/auto'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { createClient } from '@supabase/supabase-js'
-import { Platform } from 'react-native'
+import { AppState, Platform } from 'react-native'
 import * as SecureStore from 'expo-secure-store';
 import * as aesjs from "aes-js";
 import 'react-native-get-random-values';
@@ -64,3 +64,12 @@ export const supabase = createClient(
       detectSessionInUrl: false,
     },
   })
+
+  
+  AppState.addEventListener("change", (state) => {
+    if (state === "active") {
+      supabase.auth.startAutoRefresh();
+    } else {
+      supabase.auth.stopAutoRefresh();
+    }
+  });
